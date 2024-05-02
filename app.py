@@ -2,7 +2,6 @@ import chainlit as cl
 from julep import AsyncClient
 
 api_key = "<YOUR_API_KEY>"
-
 base_url = "https://dev.julep.ai/api"
 
 client = AsyncClient(api_key=api_key, base_url=base_url)
@@ -36,6 +35,7 @@ async def setup_session():
 @cl.on_chat_start
 async def start():
     session_id = await setup_session()
+
     cl.user_session.set("session_id", session_id)
     response = await client.sessions.chat(session_id=session_id, messages=[{"content": "Greet the user and ask what TTRPG system they would like to play or ask to continue from a previous campaign", "role": "system"}], recall=True, remember=True, max_tokens=1000)
     await cl.Message(
@@ -45,10 +45,8 @@ async def start():
 @cl.on_message
 async def main(message: cl.Message):
     session_id = cl.user_session.get("session_id")
-    # Your custom logic goes here...
+
     response = await client.sessions.chat(session_id=session_id, messages=[{"content": message.content, "role": "user"}], recall=True, remember=True, max_tokens=1000)
-    print(response.response[0][0].content)
-    # Send a response back to the user
     await cl.Message(
         content=response.response[0][0].content,
     ).send()
